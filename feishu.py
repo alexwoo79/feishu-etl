@@ -311,8 +311,8 @@ def transform_source_records(df):
     )
     df_melted = df_melted[(df_melted["工时"] != 0) & (df_melted["工时"].notna())]
 
-    print("[INFO] 转换后的数据预览：")
-    print(pl.from_pandas(df_melted))
+    # print("[INFO] 转换后的数据预览：")
+    # print(pl.from_pandas(df_melted))
     return df_melted
 
 # ======================
