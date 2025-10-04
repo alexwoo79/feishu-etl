@@ -37,11 +37,23 @@ type cardMessage struct {
 }
 
 // SendNotification 通过飞书机器人发送执行结果通知
-func SendNotification(webhook string, result NotificationResult) error {
-	if webhook == "" {
-		return nil // 未配置Webhook时不发送通知，也不报错
+func SendNotification(webhook string, chatID string, client *Client, result NotificationResult) error {
+	// 如果配置了webhook，优先使用webhook方式发送消息
+	if webhook != "" {
+		return sendViaWebhook(webhook, result)
 	}
+	
+	// 如果配置了chatID且提供了client，则使用应用机器人发送消息到指定群聊
+	if chatID != "" && client != nil {
+		return sendViaAppRobot(chatID, client, result)
+	}
+	
+	// 未配置webhook和chatID时不发送通知，也不报错
+	return nil
+}
 
+// 通过webhook发送消息
+func sendViaWebhook(webhook string, result NotificationResult) error {
 	// 构建消息卡片
 	card := buildNotificationCard(result)
 	
@@ -62,6 +74,50 @@ func SendNotification(webhook string, result NotificationResult) error {
 		return fmt.Errorf("飞书机器人返回非成功状态: %d", resp.StatusCode)
 	}
 
+	return nil
+}
+
+// 通过应用机器人发送消息到指定群聊
+func sendViaAppRobot(chatID string, client *Client, result NotificationResult) error {
+	// 构建消息卡片
+	card := buildNotificationCard(result)
+	
+	// 构建请求体
+	requestBody := map[string]interface{}{
+		"chat_id": chatID,
+		"msg_type": "interactive",
+		"card": card.Card,
+	}
+	
+	// 序列化消息
+	payload, err := json.Marshal(requestBody)
+	if err != nil {
+		return fmt.Errorf("序列化消息失败: %w", err)
+	}
+
+	// 构造请求
+	url := "https://open.feishu.cn/open-apis/message/v4/send/"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return fmt.Errorf("创建请求失败: %w", err)
+	}
+	
+	// 设置请求头
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Authorization", "Bearer "+client.token)
+	
+	// 发送请求
+	resp, err := client.sendWithRetry(req, 3)
+	if err != nil {
+		return fmt.Errorf("发送请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+	
+	// 检查响应状态
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("飞书机器人返回非成功状态: %d", resp.StatusCode)
+	}
+	
 	return nil
 }
 
@@ -142,4 +198,3 @@ func buildNotificationCard(result NotificationResult) cardMessage {
 
 	return card
 }
-    

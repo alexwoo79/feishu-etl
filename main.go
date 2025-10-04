@@ -156,9 +156,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// 发送飞书通知
-	if err := feishu.SendNotification(cfg.Webhook, result); err != nil {
+	if err := feishu.SendNotification(cfg.Webhook, cfg.ChatID, client, result); err != nil {
 		log.Printf("发送飞书通知失败: %v", err)
 	}
 }
-
-

@@ -9,5 +9,6 @@
   "batch_size": 50,
   "date_field": "填报日期",
   "dry_run": false,
-  "chat_id": "oc_5ad103ffd927f3ba358efe6af472b410"
+  "robot_webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/d08249df-5217-40dc-ab15-70366471496e",
+  "chat_id": "oc_1234567890abcdef1234567890abcdef"
 }

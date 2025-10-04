@@ -20,6 +20,7 @@ type Config struct {
 	BatchSize       int    `json:"batch_size"`
 	DryRun          bool   `json:"dry_run"`
 	Webhook 		string `json:"robot_webhook"` // 飞书机器人Webhook地址
+	ChatID          string `json:"chat_id"`       // 飞书群聊ID
 }
 
 // Load 从文件加载配置
