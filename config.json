@@ -1,0 +1,13 @@
+{
+  "app_id": "cli_a839191a537ad00c",
+  "app_secret": "fV2isKWXfw5Zy7SHeOFJLbeLE6J8cmW0",
+  "bitable_app_token": "IjCmbbblcaoTMPsCiRicKVDxn7g",
+  "source_table": "tbldwlDXKoRro0Ah",
+  "target_table": "tblLYzvd6ghpKEAT",
+  "mode": "incremental",   
+  "days": 7,
+  "batch_size": 50,
+  "date_field": "填报日期",
+  "dry_run": false,
+  "robot_webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/d08249df-5217-40dc-ab15-70366471496e"
+}
