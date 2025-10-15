@@ -21,6 +21,8 @@ type Config struct {
 	DryRun          bool   `json:"dry_run"`
 	Webhook 		string `json:"robot_webhook"` // 飞书机器人Webhook地址
 	ChatID          string `json:"chat_id"`       // 飞书群聊ID
+	CSVOutput       bool   `json:"csv_output"`    // 是否输出CSV文件
+	CSVFileName     string `json:"csv_file_name"` // CSV文件名
 }
 
 // Load 从文件加载配置
@@ -49,19 +51,13 @@ func Load(path string) (*Config, error) {
 	if cfg.Mode == "" {
 		cfg.Mode = "full"
 	}
+	
 	if cfg.BatchSize == 0 {
-		cfg.BatchSize = 50
+		cfg.BatchSize = 500
 	}
-	if cfg.DateField == "" {
-		cfg.DateField = "填报日期"
-	}
-	if cfg.Days <= 0 && cfg.Mode == "incremental" {
-		cfg.Days = 7
-	}
-
-	// 验证配置
-	if err := cfg.Validate(); err != nil {
-		return nil, err
+	
+	if cfg.CSVFileName == "" {
+		cfg.CSVFileName = "output.csv"
 	}
 
 	return &cfg, nil
