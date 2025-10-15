@@ -173,7 +173,12 @@ func prepareRecordForWriting(record map[string]interface{}, dateField string) (m
 				return nil, fmt.Errorf("日期字段 '%v' 不是字符串类型", value)
 			}
 		} else {
-			prepared[key] = value
+			// 处理字符串字段中的换行符，将其替换为分号，避免API获取时被分割为多个item
+			if str, ok := value.(string); ok {
+				prepared[key] = util.ReplaceNewlinesWithSemicolons(str)
+			} else {
+				prepared[key] = value
+			}
 		}
 	}
 	return prepared, nil
