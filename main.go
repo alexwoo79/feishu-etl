@@ -69,6 +69,10 @@ func main() {
 	// 添加模式选择参数，支持full和incremental，默认full
 	rootCmd.Flags().StringP("mode", "m", "full", "运行模式，支持 'full'（全量）和 'incremental'（增量），默认 'full'")
 
+	// 添加新参数 -s 发送飞书通知，-o 输出CSV文件
+	rootCmd.Flags().BoolP("send", "s", false, "发送飞书通知")
+	rootCmd.Flags().StringP("output", "o", "", "输出CSV文件路径")
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -116,6 +120,17 @@ func run(cmd *cobra.Command, args []string) {
 	// 将模式保存到配置中，供后续ETL流程使用
 	cfg.Mode = mode
 
+	// 处理输出CSV文件参数
+	outputFile, _ := cmd.Flags().GetString("output")
+	if outputFile != "" {
+		cfg.CSVOutput = true
+		cfg.CSVFileName = outputFile
+		log.Printf("[INFO] 启用CSV文件输出: %s", outputFile)
+	} else {
+		// 如果没有指定 -o 参数，则不输出 CSV 文件，即使配置文件中设置了 csv_output=true
+		cfg.CSVOutput = false
+	}
+
 	// 获取飞书令牌
 	log.Println("[INFO] 获取飞书访问令牌...")
 	token, err := feishu.GetTenantAccessToken(cfg.AppID, cfg.AppSecret)
@@ -131,6 +146,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	// 执行ETL流程（修改为接收结果和错误）
 	pipelineResult, etlErr := etl.RunPipeline(client, cfg)
+
 	// 构建通知结果
 	result := feishu.NotificationResult{
 		Success:   etlErr == nil,
@@ -149,14 +165,32 @@ func run(cmd *cobra.Command, args []string) {
 				return fmt.Sprintf("抽取记录: %d 条, 转换后: %d 条.",
 					pipelineResult.TotalRecords,
 					pipelineResult.TransformedRecords,
-					)
+				)
 			}
 			return "未获取到执行详情"
 		}(),
 	}
 
-	// 发送飞书通知
-	if err := feishu.SendNotification(cfg.Webhook, cfg.ChatID, client, result); err != nil {
-		log.Printf("发送飞书通知失败: %v", err)
+	// 处理发送飞书通知参数
+	sendFlag, _ := cmd.Flags().GetBool("send")
+	if sendFlag {
+		log.Println("[INFO] 发送飞书通知...")
+		// 记录配置信息用于调试
+		// log.Printf("[DEBUG] Webhook: '%s', ChatID: '%s'", cfg.Webhook, cfg.ChatID)
+
+		// 检查是否配置了通知方式
+		if cfg.Webhook == "" && cfg.ChatID == "" {
+			log.Println("[WARN] 未配置 Webhook 或 ChatID，无法发送通知")
+		} else {
+			// 发送飞书通知
+			if err := feishu.SendNotification(cfg.Webhook, cfg.ChatID, client, result); err != nil {
+				log.Printf("发送飞书通知失败: %v", err)
+			} else {
+				log.Println("[INFO] 飞书通知发送成功")
+			}
+		}
+	} else {
+		log.Println("[INFO] 未启用发送通知功能")
+		// 如果没有 -s 参数，则不发送通知，即使配置了 webhook 或 chatID
 	}
 }

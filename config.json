@@ -9,7 +9,7 @@
   "batch_size": 50,
   "date_field": "填报日期",
   "dry_run": false,
-  "chat_id": "oc_5ad103ffd927f3ba358efe6af472b410",
+  "chat_id": "oc_dbb67ad7265babedb90c58abf1485dde",
   "csv_output": true,
   "csv_file_name": "output.csv"
 }
