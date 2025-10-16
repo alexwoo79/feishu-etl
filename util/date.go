@@ -100,7 +100,7 @@ func ParseDateToTimestampMs(dateStr string) (int64, error) {
 	if err != nil {
 		// 在 Windows 系统上可能无法加载 Asia/Shanghai 时区
 		// 尝试使用固定时区偏移 +08:00
-		log.Printf("[WARN] 无法加载 Asia/Shanghai 时区, 使用 UTC+8 时区: %v", err)
+		// log.Printf("[WARN] 无法加载 Asia/Shanghai 时区, 使用 UTC+8 时区: %v", err)
 		loc = time.FixedZone("UTC+8", 8*60*60)
 	}
 
