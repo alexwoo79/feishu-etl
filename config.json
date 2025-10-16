@@ -5,7 +5,7 @@
   "source_table": "tbldwlDXKoRro0Ah",
   "target_table": "tblLYzvd6ghpKEAT",
   "mode": "full",
-  "days": 7,
+  "days": 30,
   "batch_size": 50,
   "date_field": "填报日期",
   "dry_run": false,

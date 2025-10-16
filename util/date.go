@@ -1,10 +1,11 @@
 package util
 
 import (
-	"github.com/alexwoo79/feishu-etl/feishu"
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/alexwoo79/feishu-etl/feishu"
 )
 
 const (
@@ -97,8 +98,10 @@ func ParseDateToTimestampMs(dateStr string) (int64, error) {
 	layout := "2006-01-02"
 	loc, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
-		log.Printf("[WARN] 无法加载 Asia/Shanghai 时区, 使用 UTC: %v", err)
-		loc = time.UTC
+		// 在 Windows 系统上可能无法加载 Asia/Shanghai 时区
+		// 尝试使用固定时区偏移 +08:00
+		log.Printf("[WARN] 无法加载 Asia/Shanghai 时区, 使用 UTC+8 时区: %v", err)
+		loc = time.FixedZone("UTC+8", 8*60*60)
 	}
 
 	tLocal, err := time.ParseInLocation(layout, dateStr, loc)

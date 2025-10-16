@@ -66,8 +66,8 @@ func main() {
 	// 添加命令行参数
 	rootCmd.PersistentFlags().StringP("config", "c", "config.json", "配置文件路径")
 	rootCmd.Flags().BoolP("dry-run", "d", false, "Dry-run模式，只打印不执行写入操作")
-	// 添加模式选择参数，支持full和incremental，默认full
-	rootCmd.Flags().StringP("mode", "m", "full", "运行模式，支持 'full'（全量）和 'incremental'（增量），默认 'full'")
+	// 添加模式选择参数，支持full和incremental，默认incremental
+	rootCmd.Flags().StringP("mode", "m", "incremental", "运行模式，支持 'full'（全量）和 'incremental'（增量），默认 'incremental'")
 
 	// 添加新参数 -s 发送飞书通知，-o 输出CSV文件
 	rootCmd.Flags().BoolP("send", "s", false, "发送飞书通知")
