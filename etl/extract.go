@@ -37,3 +37,11 @@ func Extract(client *feishu.Client, cfg *config.Config) ([]feishu.Record, error)
 	log.Printf("[INFO] 全量模式: %d 条", len(records))
 	return records, nil
 }
+
+// min 返回两个整数中的较小值
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

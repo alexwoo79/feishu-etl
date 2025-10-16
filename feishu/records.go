@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // Record 表示飞书多维表格中的一条记录
@@ -82,6 +83,11 @@ func (c *Client) ListRecords(bitableAppToken, tableID string, limit int, viewID 
 			return nil, fmt.Errorf("获取记录失败: code=%d, 响应: %s", listResp.Code, string(body))
 		}
 
+		// 对获取到的记录进行预处理
+		for i := range listResp.Data.Items {
+			preprocessRecordFields(&listResp.Data.Items[i])
+		}
+
 		records = append(records, listResp.Data.Items...)
 
 		pageToken = listResp.Data.PageToken
@@ -91,6 +97,53 @@ func (c *Client) ListRecords(bitableAppToken, tableID string, limit int, viewID 
 	}
 
 	return records, nil
+}
+
+// preprocessRecordFields 预处理记录字段，将复合对象转换为字符串
+func preprocessRecordFields(record *Record) {
+	for fieldName, fieldValue := range record.Fields {
+		// 特别处理"检查"字段
+		if fieldName == "检查" {
+			// 提取文本内容
+			textContent := extractTextFromField(fieldValue)
+			// 将复合对象替换为纯文本
+			record.Fields[fieldName] = textContent
+		}
+		// 可以在这里添加其他字段的预处理逻辑
+	}
+}
+
+// extractTextFromField 从飞书API返回的字段中提取文本内容
+func extractTextFromField(fieldValue interface{}) string {
+	// 如果是字符串类型，直接返回
+	if str, ok := fieldValue.(string); ok {
+		return str
+	}
+
+	// 如果是复合对象，尝试提取文本
+	if fieldMap, ok := fieldValue.(map[string]interface{}); ok {
+		// 检查是否存在value字段
+		if valueField, exists := fieldMap["value"]; exists {
+			// value字段应该是一个数组
+			if valueArray, ok := valueField.([]interface{}); ok {
+				// 遍历数组中的元素
+				var textBuilder strings.Builder
+				for _, item := range valueArray {
+					if itemMap, ok := item.(map[string]interface{}); ok {
+						if text, exists := itemMap["text"]; exists {
+							if textStr, ok := text.(string); ok {
+								textBuilder.WriteString(textStr)
+							}
+						}
+					}
+				}
+				return textBuilder.String()
+			}
+		}
+	}
+
+	// 兜底方案：尝试直接转换为字符串
+	return fmt.Sprintf("%v", fieldValue)
 }
 
 // BatchCreateRecords 批量创建记录
