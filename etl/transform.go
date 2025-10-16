@@ -135,48 +135,6 @@ func shouldSkipRecord(record feishu.Record, fields map[string]interface{}) (bool
 	return false, ""
 }
 
-// extractTextFromField 从飞书API返回的字段中提取文本内容
-func extractTextFromField(fieldValue interface{}) string {
-	// 如果是字符串类型，直接返回
-	if str, ok := fieldValue.(string); ok {
-		return str
-	}
-
-	// 如果是复合对象，尝试提取文本
-	if fieldMap, ok := fieldValue.(map[string]interface{}); ok {
-		// 检查是否存在value字段
-		if valueField, exists := fieldMap["value"]; exists {
-			// value字段应该是一个数组
-			if valueArray, ok := valueField.([]interface{}); ok {
-				// 遍历数组中的元素
-				var textBuilder strings.Builder
-				for _, item := range valueArray {
-					if itemMap, ok := item.(map[string]interface{}); ok {
-						if text, exists := itemMap["text"]; exists {
-							if textStr, ok := text.(string); ok {
-								textBuilder.WriteString(textStr)
-							}
-						}
-					}
-				}
-				return textBuilder.String()
-			}
-		}
-	}
-
-	// 兜底方案：尝试直接转换为字符串
-	return fmt.Sprintf("%v", fieldValue)
-}
-
-// getMapKeys 获取map的所有键
-func getMapKeys(m map[string]interface{}) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
 // containsIgnoreCase 检查字符串是否包含指定子串（忽略大小写）
 func containsIgnoreCase(s, substr string) bool {
 	return strings.Contains(strings.ToLower(s), strings.ToLower(substr))
